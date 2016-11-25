@@ -76,7 +76,7 @@ class FlowContext extends BehatContext
      */
     protected function initializeFlow()
     {
-        require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Classes/Neos/Flow/Core/Bootstrap.php');
+        require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Classes/Core/Bootstrap.php');
         if (!defined('FLOW_PATH_ROOT')) {
             define('FLOW_PATH_ROOT', realpath(__DIR__ . '/../../../../..') . '/');
         }
