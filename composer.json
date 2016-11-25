@@ -11,6 +11,11 @@
             "Neos\\Behat\\": "Classes"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Neos\\Behat\\Tests\\": "Tests"
+        }
+    },
     "replace": {
         "flowpack/behat": "self.version"
     },
