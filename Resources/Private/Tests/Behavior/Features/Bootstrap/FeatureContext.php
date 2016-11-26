@@ -23,7 +23,7 @@ class FeatureContext extends MinkContext {
 	 * @param array $parameters Context parameters (configured through behat.yml)
 	 */
 	public function __construct(array $parameters) {
-		$this->useContext('flow', new \Flowpack\Behat\Tests\Behat\FlowContext($parameters));
+		$this->useContext('flow', new \Neos\Behat\Tests\Behat\FlowContext($parameters));
 		$this->objectManager = $this->getSubcontext('flow')->getObjectManager();
 	}
 
