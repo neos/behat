@@ -3,7 +3,7 @@
 use Behat\Behat\Exception\PendingException;
 use Behat\Gherkin\Node\TableNode,
 	Behat\MinkExtension\Context\MinkContext;
-use Neos\Flow\Utility\Arrays;
+use Neos\Utility\Arrays;
 use PHPUnit_Framework_Assert as Assert;
 
 require_once(__DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContext.php');
@@ -13,7 +13,7 @@ require_once(__DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContext.php')
  */
 class FeatureContext extends MinkContext {
 	/**
-	 * @var \Neos\Flow\Object\ObjectManagerInterface
+	 * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
 	 */
 	protected $objectManager;
 
