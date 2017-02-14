@@ -12,8 +12,6 @@ namespace Neos\Behat\Command;
  */
 
 use Neos\Flow\Annotations as Flow;
-use Neos\Flow\Http\Client\Browser;
-use Neos\Flow\Http\Client\CurlEngine;
 use Neos\Utility\Files;
 use Neos\Flow\Cli\CommandController;
 
@@ -47,7 +45,7 @@ class BehatCommandController extends CommandController
 
         $behatBinaryPath = FLOW_PATH_ROOT . 'bin/behat';
         if (!is_file($behatBinaryPath)) {
-            system('cd "' . $behatBuildPath . '" && composer install');
+            exec('cd "' . $behatBuildPath . '" && composer install');
             $this->outputLine();
             $this->outputLine('Installed Behat to bin/behat');
         }
@@ -57,7 +55,7 @@ class BehatCommandController extends CommandController
             $seleniumVersion = 'selenium-server-standalone-2.53.1.jar';
             $seleniumUrl = 'http://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
             $returnValue = 0;
-            system('wget --quiet ' . $seleniumUrl, $returnValue);
+            exec('wget --quiet ' . $seleniumUrl, $output, $returnValue);
             $this->outputLine('Downloading Selenium ' . $seleniumVersion . ' to bin/selenium-server.jar...');
             if ($returnValue > 0) {
                 throw new \RuntimeException('Could not download selenium from ' . $seleniumUrl . '. wget errno: ' . $returnValue);
