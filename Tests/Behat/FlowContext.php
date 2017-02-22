@@ -102,10 +102,10 @@ class FlowContext extends BehatContext
     {
         if (self::$bootstrap !== null) {
             try {
-				self::$bootstrap->shutdown('Runtime');
-			} catch(\Doctrine\ORM\ORMInvalidArgumentException $e) {
-				//ignore this tye of exceptions
-			}
+                self::$bootstrap->shutdown('Runtime');
+	    } catch(\Doctrine\ORM\ORMInvalidArgumentException $e) {
+	        //ignore this tye of exceptions
+            }
         }
     }
 
