@@ -31,6 +31,7 @@ use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Security\Policy\PolicyService;
 use Neos\Flow\Security\Policy\RoleRepository;
+use PHPUnit\Framework\Assert;
 
 class FlowContext extends BehatContext
 {
@@ -137,7 +138,7 @@ class FlowContext extends BehatContext
      */
     public function iShouldSeeTheCommandOutput($line)
     {
-        \PHPUnit_Framework_Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
+        Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
     }
 
     /**
@@ -153,7 +154,7 @@ class FlowContext extends BehatContext
      */
     public function iShouldSeeSomethingInTheCommandOutput($contents)
     {
-        \PHPUnit_Framework_Assert::assertContains($contents, $this->lastCommandOutput);
+        Assert::assertContains($contents, $this->lastCommandOutput);
     }
 
     /**

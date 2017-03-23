@@ -1,10 +1,8 @@
 <?php
 
 use Behat\Behat\Exception\PendingException;
-use Behat\Gherkin\Node\TableNode,
-	Behat\MinkExtension\Context\MinkContext;
-use Neos\Utility\Arrays;
-use PHPUnit_Framework_Assert as Assert;
+use Behat\Gherkin\Node\TableNode;
+use Behat\MinkExtension\Context\MinkContext;
 
 require_once(__DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContext.php');
 
