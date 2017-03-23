@@ -12,6 +12,8 @@ namespace Neos\Behat\Tests\Functional\Fixture;
  */
 
 use Neos\Flow\Annotations as Flow;
+use Neos\Utility\Arrays;
+use Neos\Utility\ObjectAccess;
 
 /**
  * Base test fixture factory
@@ -28,8 +30,7 @@ abstract class FixtureFactory
 	 *
 	 * @var array
 	 */
-	protected $fixtureDefinitions = array(
-	);
+	protected $fixtureDefinitions = array();
 
 	/**
 	 * @Flow\Inject
@@ -43,20 +44,21 @@ abstract class FixtureFactory
 	 * @param array $overrideProperties
 	 * @param boolean $addObjectToPersistence
 	 * @return object
+	 * @throws \Exception
 	 */
-	public function buildObject($objectName, $overrideProperties = array(), $addObjectToPersistence = false)
+	public function buildObject($objectName, array $overrideProperties = array(), $addObjectToPersistence = false)
     {
 		if (!isset($this->fixtureDefinitions[$objectName])) {
 			throw new \Exception('Object name ' . $objectName . ' not configured in fixture definitions');
 		}
-		$properties = \Neos\Flow\Utility\Arrays::arrayMergeRecursiveOverrule($this->fixtureDefinitions[$objectName], $overrideProperties);
+		$properties = Arrays::arrayMergeRecursiveOverrule($this->fixtureDefinitions[$objectName], $overrideProperties);
 		$className = isset($properties['__type']) ? $properties['__type'] : $this->baseType;
 		unset($properties['__type']);
 
 		$object = new $className();
 		foreach ($properties as $propertyName => $propertyValue) {
-			if (\Neos\Flow\Reflection\ObjectAccess::isPropertySettable($object, $propertyName)) {
-				\Neos\Flow\Reflection\ObjectAccess::setProperty($object, $propertyName, $propertyValue);
+			if (ObjectAccess::isPropertySettable($object, $propertyName)) {
+				ObjectAccess::setProperty($object, $propertyName, $propertyValue);
 			}
 		}
 
