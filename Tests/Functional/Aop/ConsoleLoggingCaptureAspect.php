@@ -36,6 +36,7 @@ class ConsoleLoggingCaptureAspect
     /**
      * @Flow\Around("method(Neos\Flow\Cli\ConsoleOutput->output())")
      * @param JoinPointInterface $joinPoint
+     * @return mixed
      */
     public function captureOutput(JoinPointInterface $joinPoint)
     {
