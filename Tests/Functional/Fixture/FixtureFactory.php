@@ -49,7 +49,7 @@ abstract class FixtureFactory
 		if (!isset($this->fixtureDefinitions[$objectName])) {
 			throw new \Exception('Object name ' . $objectName . ' not configured in fixture definitions');
 		}
-		$properties = \Neos\Flow\Utility\Arrays::arrayMergeRecursiveOverrule($this->fixtureDefinitions[$objectName], $overrideProperties);
+		$properties = \Neos\Utility\Arrays::arrayMergeRecursiveOverrule($this->fixtureDefinitions[$objectName], $overrideProperties);
 		$className = isset($properties['__type']) ? $properties['__type'] : $this->baseType;
 		unset($properties['__type']);
 
