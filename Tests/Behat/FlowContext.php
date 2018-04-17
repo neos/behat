@@ -31,6 +31,7 @@ use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Security\Policy\PolicyService;
 use Neos\Flow\Security\Policy\RoleRepository;
+use Neos\Utility\ObjectAccess;
 use PHPUnit\Framework\Assert;
 
 class FlowContext extends BehatContext
@@ -266,7 +267,7 @@ class FlowContext extends BehatContext
 
         if ($this->objectManager->isRegistered(RoleRepository::class)) {
             $roleRepository = $this->objectManager->get(RoleRepository::class);
-            \Neos\Flow\Reflection\ObjectAccess::setProperty($roleRepository, 'newRoles', array(), true);
+            ObjectAccess::setProperty($roleRepository, 'newRoles', array(), true);
         }
     }
 
