@@ -244,9 +244,9 @@ class FlowContext extends BehatContext
         /** @var $reflectionService ReflectionService */
         $reflectionService = $this->objectManager->get(ReflectionService::class);
         $fixtureFactoryClassNames = $reflectionService->getAllSubClassNamesForClass(FixtureFactory::class);
-        foreach ($fixtureFactoryClassNames as $fixtureFactoyClassName) {
-            if (!$reflectionService->isClassAbstract($fixtureFactoyClassName)) {
-                $factory = $this->objectManager->get($fixtureFactoyClassName);
+        foreach ($fixtureFactoryClassNames as $fixtureFactoryClassName) {
+            if (!$reflectionService->isClassAbstract($fixtureFactoryClassName)) {
+                $factory = $this->objectManager->get($fixtureFactoryClassName);
                 $factory->reset();
             }
         }
