@@ -13,9 +13,8 @@ namespace Neos\Behat\Tests\Behat;
 
 use Behat\Behat\Context\BehatContext;
 use Behat\Behat\Exception\ErrorException;
-use Doctrine\Common\Persistence\ObjectManager as DoctrineObjectManager;
 use Doctrine\DBAL\DBALException;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use Neos\Behat\Tests\Functional\Fixture\FixtureFactory;
 use Neos\Flow\Cli\RequestBuilder;
@@ -31,6 +30,7 @@ use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Security\Policy\PolicyService;
 use Neos\Flow\Security\Policy\RoleRepository;
+use Neos\Utility\ObjectAccess;
 use PHPUnit\Framework\Assert;
 
 class FlowContext extends BehatContext
@@ -162,8 +162,8 @@ class FlowContext extends BehatContext
      */
     public function resetTestFixtures($event)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->objectManager->get(DoctrineObjectManager::class);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->objectManager->get(EntityManagerInterface::class);
         $entityManager->clear();
 
         if (self::$databaseSchema !== null) {
@@ -202,10 +202,10 @@ class FlowContext extends BehatContext
     /**
      * Truncate all known tables
      *
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      * @return void
      */
-    public function truncateTables($entityManager)
+    public function truncateTables(EntityManagerInterface $entityManager)
     {
         $connection = $entityManager->getConnection();
 
@@ -243,9 +243,9 @@ class FlowContext extends BehatContext
         /** @var $reflectionService ReflectionService */
         $reflectionService = $this->objectManager->get(ReflectionService::class);
         $fixtureFactoryClassNames = $reflectionService->getAllSubClassNamesForClass(FixtureFactory::class);
-        foreach ($fixtureFactoryClassNames as $fixtureFactoyClassName) {
-            if (!$reflectionService->isClassAbstract($fixtureFactoyClassName)) {
-                $factory = $this->objectManager->get($fixtureFactoyClassName);
+        foreach ($fixtureFactoryClassNames as $fixtureFactoryClassName) {
+            if (!$reflectionService->isClassAbstract($fixtureFactoryClassName)) {
+                $factory = $this->objectManager->get($fixtureFactoryClassName);
                 $factory->reset();
             }
         }
@@ -266,7 +266,7 @@ class FlowContext extends BehatContext
 
         if ($this->objectManager->isRegistered(RoleRepository::class)) {
             $roleRepository = $this->objectManager->get(RoleRepository::class);
-            \Neos\Flow\Reflection\ObjectAccess::setProperty($roleRepository, 'newRoles', array(), true);
+            ObjectAccess::setProperty($roleRepository, 'newRoles', array(), true);
         }
     }
 
