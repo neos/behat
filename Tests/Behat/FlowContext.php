@@ -14,7 +14,6 @@ namespace Neos\Behat\Tests\Behat;
 use Behat\Behat\Context\BehatContext;
 use Behat\Behat\Exception\ErrorException;
 use Doctrine\DBAL\DBALException;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use Neos\Behat\Tests\Functional\Fixture\FixtureFactory;
