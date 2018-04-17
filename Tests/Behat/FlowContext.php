@@ -13,9 +13,9 @@ namespace Neos\Behat\Tests\Behat;
 
 use Behat\Behat\Context\BehatContext;
 use Behat\Behat\Exception\ErrorException;
-use Doctrine\Common\Persistence\ObjectManager as DoctrineObjectManager;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use Neos\Behat\Tests\Functional\Fixture\FixtureFactory;
 use Neos\Flow\Cli\RequestBuilder;
@@ -163,7 +163,7 @@ class FlowContext extends BehatContext
     public function resetTestFixtures($event)
     {
         /** @var EntityManager $entityManager */
-        $entityManager = $this->objectManager->get(DoctrineObjectManager::class);
+        $entityManager = $this->objectManager->get(EntityManagerInterface::class);
         $entityManager->clear();
 
         if (self::$databaseSchema !== null) {
