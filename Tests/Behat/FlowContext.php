@@ -163,7 +163,7 @@ class FlowContext extends BehatContext
      */
     public function resetTestFixtures($event)
     {
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->objectManager->get(EntityManagerInterface::class);
         $entityManager->clear();
 
@@ -203,10 +203,10 @@ class FlowContext extends BehatContext
     /**
      * Truncate all known tables
      *
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      * @return void
      */
-    public function truncateTables($entityManager)
+    public function truncateTables(EntityManagerInterface $entityManager)
     {
         $connection = $entityManager->getConnection();
 
