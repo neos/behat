@@ -17,11 +17,13 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use Neos\Behat\Tests\Functional\Fixture\FixtureFactory;
+use Neos\Flow\Cli\CommandRequestHandler;
 use Neos\Flow\Cli\RequestBuilder;
 use Neos\Flow\Cli\Response;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Configuration\ConfigurationManager;
+use Neos\Flow\Http\RequestHandler;
 use Neos\Flow\Mvc\Dispatcher;
 use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -91,6 +93,13 @@ class FlowContext extends BehatContext
         Scripts::initializeClassLoader($bootstrap);
         Scripts::initializeSignalSlot($bootstrap);
         Scripts::initializePackageManagement($bootstrap);
+        // FIXME: We NEED to define a request due to return type declarations, and with hte
+        // current state of the behat test (setup) we cannot use a Http\RequestHandler because
+        // some code would then try to access the httpRequest and Response which is not available,
+        // so we need to think if we "mock" the whole component chain and a Http\RequestHandler or
+        // live with having a CommandRequestHandler here. (A specialisted TestHandler for this case
+        // would probably be a good idea.
+        $bootstrap->setActiveRequestHandler(new CommandRequestHandler($bootstrap));
         $bootstrap->buildRuntimeSequence()->invoke($bootstrap);
 
         return $bootstrap;
