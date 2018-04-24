@@ -336,7 +336,12 @@ class FlowContext extends BehatContext
                         $routeValues = array_merge($routeValues, $arguments);
                     }
                     if ($route->resolves($routeValues)) {
-                        $uri = $route->getResolvedUriPath();
+                        $context = new \Neos\Flow\Mvc\Routing\Dto\ResolveContext(
+                            new \Neos\Flow\Http\Uri('http://localhost'),
+                            $routeValues,
+                            false
+                        );
+                        $uri = $this->router->resolve($context);
                         break;
                     }
                 }
