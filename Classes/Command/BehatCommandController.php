@@ -52,8 +52,8 @@ class BehatCommandController extends CommandController
 
         $seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
         if (!is_file($seleniumBinaryPath)) {
-            $seleniumVersion = 'selenium-server-standalone-2.53.1.jar';
-            $seleniumUrl = 'http://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
+            $seleniumVersion = 'selenium-server-standalone-3.14.0.jar';
+            $seleniumUrl = 'http://selenium-release.storage.googleapis.com/3.14/' . $seleniumVersion;
             $returnValue = 0;
             exec('wget --quiet ' . $seleniumUrl, $output, $returnValue);
             $this->outputLine('Downloading Selenium ' . $seleniumVersion . ' to bin/selenium-server.jar...');
