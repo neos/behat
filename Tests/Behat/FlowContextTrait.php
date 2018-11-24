@@ -11,8 +11,8 @@ namespace Neos\Behat\Tests\Behat;
  * source code.
  */
 
-use Behat\Behat\Context\BehatContext;
 use Behat\Behat\Exception\ErrorException;
+use Behat\Behat\Tester\Exception\PendingException;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
@@ -31,11 +31,9 @@ use Neos\Flow\Persistence\Doctrine\Service;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Security\Policy\PolicyService;
-use Neos\Flow\Security\Policy\RoleRepository;
-use Neos\Utility\ObjectAccess;
 use PHPUnit\Framework\Assert;
 
-class FlowContext extends BehatContext
+trait FlowContextTrait
 {
 
     /**
@@ -64,17 +62,6 @@ class FlowContext extends BehatContext
     protected $lastCommandOutput;
 
     /**
-     * @param array $parameters
-     */
-    public function __construct(array $parameters)
-    {
-        if (self::$bootstrap === NULL) {
-            self::$bootstrap = $this->initializeFlow();
-        }
-        $this->objectManager = self::$bootstrap->getObjectManager();
-    }
-
-    /**
      * Create a flow bootstrap instance
      */
     protected function initializeFlow()
@@ -86,14 +73,12 @@ class FlowContext extends BehatContext
         // The new classloader needs warnings converted to exceptions
         if (!defined('BEHAT_ERROR_REPORTING')) {
             define('BEHAT_ERROR_REPORTING', E_ALL);
-            // Load ErrorException class, since it will be used in the Behat error handler
-            class_exists(ErrorException::class);
         }
         $bootstrap = new Bootstrap('Testing/Behat');
         Scripts::initializeClassLoader($bootstrap);
         Scripts::initializeSignalSlot($bootstrap);
         Scripts::initializePackageManagement($bootstrap);
-        // FIXME: We NEED to define a request due to return type declarations, and with hte
+        // FIXME: We NEED to define a request due to return type declarations, and with the
         // current state of the behat test (setup) we cannot use a Http\RequestHandler because
         // some code would then try to access the httpRequest and Response which is not available,
         // so we need to think if we "mock" the whole component chain and a Http\RequestHandler or
@@ -272,11 +257,6 @@ class FlowContext extends BehatContext
     protected function resetRolesAndPolicyService()
     {
         $this->objectManager->get(PolicyService::class)->reset();
-
-        if ($this->objectManager->isRegistered(RoleRepository::class)) {
-            $roleRepository = $this->objectManager->get(RoleRepository::class);
-            ObjectAccess::setProperty($roleRepository, 'newRoles', array(), true);
-        }
     }
 
     /**
@@ -374,5 +354,15 @@ class FlowContext extends BehatContext
     public function getLastCommandOutput()
     {
         return $this->lastCommandOutput;
+    }
+
+    /**
+     * Prints beautified debug string.
+     *
+     * @param string $string debug string
+     */
+    public function printDebug($string)
+    {
+        echo "\n\033[36m|  " . strtr($string, array("\n" => "\n|  ")) . "\033[0m\n\n";
     }
 }
