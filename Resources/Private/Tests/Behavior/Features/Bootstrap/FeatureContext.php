@@ -1,34 +1,41 @@
 <?php
 
-use Behat\Behat\Exception\PendingException;
-use Behat\Gherkin\Node\TableNode;
 use Behat\MinkExtension\Context\MinkContext;
+use Neos\Behat\Tests\Behat\FlowContextTrait;
 
-require_once(__DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContext.php');
+require_once __DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContextTrait.php';
 
 /**
  * Features context
  */
-class FeatureContext extends MinkContext {
-	/**
-	 * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
-	 */
-	protected $objectManager;
+class FeatureContext extends MinkContext
+{
+    use FlowContextTrait;
 
-	/**
-	 * Initializes the context
-	 *
-	 * @param array $parameters Context parameters (configured through behat.yml)
-	 */
-	public function __construct(array $parameters) {
-		$this->useContext('flow', new \Neos\Behat\Tests\Behat\FlowContext($parameters));
-		$this->objectManager = $this->getSubcontext('flow')->getObjectManager();
-	}
+    /**
+     * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
+     */
+    protected $objectManager;
 
-	/**
-	* @Then /^I should see some output from behat$/
-	*/
-	public function iShouldSeeSomeOutputFromBehat() {
-		return TRUE;
-	}
+    /**
+     * Initializes the context
+     *
+     * @param array $parameters Context parameters (configured through behat.yml)
+     */
+    public function __construct(array $parameters)
+    {
+        if (self::$bootstrap === null) {
+            self::$bootstrap = $this->initializeFlow();
+        }
+        $this->objectManager = self::$bootstrap->getObjectManager();
+    }
+
+    /**
+     * @Then /^I should see some output from behat$/
+     */
+    public function iShouldSeeSomeOutputFromBehat()
+    {
+        $this->printDebug('Can you see me?');
+        return true;
+    }
 }

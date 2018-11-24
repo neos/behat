@@ -3,18 +3,24 @@
 # Override with behat.yml for local configuration.
 #
 default:
-  paths:
-    features: Features
-    bootstrap: %behat.paths.features%/Bootstrap
+  autoload:
+    '': "%paths.base%/Features/Bootstrap"
+  suites:
+    default:
+      contexts:
+        - FeatureContext:
+          - parameters: []
+
   extensions:
-    Behat\MinkExtension\Extension:
-      files_path: features/Resources
+    Behat\MinkExtension:
+      files_path: Features/Resources
       show_cmd: 'open %s'
       goutte: ~
       selenium2: ~
 
       # Project base URL
       #
-      # Use BEHAT_PARAMS="extensions[Behat\MinkExtension\Extension][base_url]=http://example.local/" for configuration during runtime.
+      # Use BEHAT_PARAMS="extensions[Behat\MinkExtension\Extension][base_url]=http://neos.local/" for configuration during
+      # runtime.
       #
       base_url: http://localhost/
