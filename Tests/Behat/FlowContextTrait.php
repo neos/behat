@@ -11,8 +11,6 @@ namespace Neos\Behat\Tests\Behat;
  * source code.
  */
 
-use Behat\Behat\Exception\ErrorException;
-use Behat\Behat\Tester\Exception\PendingException;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
@@ -23,7 +21,6 @@ use Neos\Flow\Cli\Response;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Configuration\ConfigurationManager;
-use Neos\Flow\Http\RequestHandler;
 use Neos\Flow\Mvc\Dispatcher;
 use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -275,7 +272,7 @@ trait FlowContextTrait
      */
     protected function getRouter()
     {
-        if ($this->router === NULL) {
+        if ($this->router === null) {
             $this->router = $this->objectManager->get(Router::class);
 
             $configurationManager = $this->objectManager->get(ConfigurationManager::class);
