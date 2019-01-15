@@ -249,9 +249,21 @@ trait FlowContextTrait
      *
      * This is needed to remove cached role entities after resetting the database.
      *
+     * @deprecated
+     */
+    protected function resetRolesAndPolicyService(): void
+    {
+        $this->resetPolicyService();
+    }
+
+    /**
+     * Reset policy service
+     *
+     * This is needed to remove cached role entities after resetting the database.
+     *
      * @return void
      */
-    protected function resetRolesAndPolicyService()
+    protected function resetPolicyService(): void
     {
         $this->objectManager->get(PolicyService::class)->reset();
     }
