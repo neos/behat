@@ -61,7 +61,7 @@ trait FlowContextTrait
     /**
      * Create a flow bootstrap instance
      */
-    protected function initializeFlow()
+    protected function initializeFlow(): Bootstrap
     {
         require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Classes/Core/Bootstrap.php');
         if (!defined('FLOW_PATH_ROOT')) {
@@ -90,7 +90,7 @@ trait FlowContextTrait
     /**
      * @AfterSuite
      */
-    public static function shutdownFlow()
+    public static function shutdownFlow(): void
     {
         if (self::$bootstrap !== null) {
             self::$bootstrap->shutdown('Runtime');
@@ -100,7 +100,7 @@ trait FlowContextTrait
     /**
      * @When /^(?:|I )run the command "([^"]*)"$/
      */
-    public function iRunTheCommand($command)
+    public function iRunTheCommand($command): void
     {
         $captureAspect = $this->objectManager->get(ConsoleLoggingCaptureAspect::class);
         $captureAspect->reset();
@@ -127,7 +127,7 @@ trait FlowContextTrait
     /**
      * @Then /^(?:|I )should see the command output "([^"]*)"$/
      */
-    public function iShouldSeeTheCommandOutput($line)
+    public function iShouldSeeTheCommandOutput($line): void
     {
         Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
     }
@@ -135,7 +135,7 @@ trait FlowContextTrait
     /**
      * @Then /^(P|p)rint last command output$/
      */
-    public function printLastCommandOutput()
+    public function printLastCommandOutput(): void
     {
         $this->printDebug($this->lastCommandOutput);
     }
@@ -143,7 +143,7 @@ trait FlowContextTrait
     /**
      * @Then /^(?:|I )should see "([^"]*)" in the command output$/
      */
-    public function iShouldSeeSomethingInTheCommandOutput($contents)
+    public function iShouldSeeSomethingInTheCommandOutput($contents): void
     {
         Assert::assertContains($contents, $this->lastCommandOutput);
     }
@@ -151,7 +151,7 @@ trait FlowContextTrait
     /**
      * @BeforeScenario @fixtures
      */
-    public function resetTestFixtures($event)
+    public function resetTestFixtures($event): void
     {
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->objectManager->get(EntityManagerInterface::class);
@@ -196,7 +196,7 @@ trait FlowContextTrait
      * @param EntityManagerInterface $entityManager
      * @return void
      */
-    public function truncateTables(EntityManagerInterface $entityManager)
+    public function truncateTables(EntityManagerInterface $entityManager): void
     {
         $connection = $entityManager->getConnection();
 
@@ -229,7 +229,7 @@ trait FlowContextTrait
      *
      * @return void
      */
-    protected function resetFactories()
+    protected function resetFactories(): void
     {
         /** @var $reflectionService ReflectionService */
         $reflectionService = $this->objectManager->get(ReflectionService::class);
@@ -301,7 +301,7 @@ trait FlowContextTrait
      * @return string
      * @deprecated Use resolvePageUri
      */
-    public function resolvePath($pageName)
+    public function resolvePath($pageName): string
     {
         return $this->resolvePageUri($pageName);
     }
@@ -317,7 +317,7 @@ trait FlowContextTrait
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function resolvePageUri($pageName, array $arguments = null)
+    public function resolvePageUri($pageName, array $arguments = null): string
     {
         $uri = null;
         if (strpos($pageName, '/') === 0) {
@@ -352,7 +352,7 @@ trait FlowContextTrait
     /**
      * @return ObjectManagerInterface
      */
-    public function getObjectManager()
+    public function getObjectManager(): ObjectManagerInterface
     {
         return $this->objectManager;
     }
@@ -360,7 +360,7 @@ trait FlowContextTrait
     /**
      * @return string
      */
-    public function getLastCommandOutput()
+    public function getLastCommandOutput(): string
     {
         return $this->lastCommandOutput;
     }
@@ -370,7 +370,7 @@ trait FlowContextTrait
      *
      * @param string $string debug string
      */
-    public function printDebug($string)
+    public function printDebug($string): void
     {
         echo "\n\033[36m|  " . strtr($string, array("\n" => "\n|  ")) . "\033[0m\n\n";
     }
