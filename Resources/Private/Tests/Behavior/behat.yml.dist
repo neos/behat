@@ -6,10 +6,11 @@ default:
   autoload:
     '': "%paths.base%/Features/Bootstrap"
   suites:
-    default:
+    behat:
+      paths:
+        - "%paths.base%/Features"
       contexts:
-        - FeatureContext:
-          - parameters: []
+        - FeatureContext
 
   extensions:
     Behat\MinkExtension:
@@ -23,4 +24,4 @@ default:
       # Use BEHAT_PARAMS="extensions[Behat\MinkExtension\Extension][base_url]=http://neos.local/" for configuration during
       # runtime.
       #
-      base_url: http://localhost/
+      # base_url: http://localhost/

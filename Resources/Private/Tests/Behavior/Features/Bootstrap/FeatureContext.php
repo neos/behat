@@ -1,14 +1,14 @@
 <?php
 
-use Behat\MinkExtension\Context\MinkContext;
+use Behat\Behat\Context\Context;
 use Neos\Behat\Tests\Behat\FlowContextTrait;
 
-require_once(__DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContextTrait.php');
+require_once(__DIR__ . '/../../../../../../Application/Neos.Behat/Tests/Behat/FlowContextTrait.php');
 
 /**
  * Features context
  */
-class FeatureContext extends MinkContext
+class FeatureContext implements Context
 {
     use FlowContextTrait;
 
