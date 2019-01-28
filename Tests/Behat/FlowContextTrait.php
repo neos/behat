@@ -21,6 +21,7 @@ use Neos\Flow\Cli\Response;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Configuration\ConfigurationManager;
+use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Dispatcher;
 use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -334,7 +335,8 @@ trait FlowContextTrait
                         $routeValues = array_merge($routeValues, $arguments);
                     }
                     if ($route->resolves($routeValues)) {
-                        $uri = $route->getResolvedUriPath();
+                        $resolvedUriConstraints = $route->getResolvedUriConstraints();
+                        $uri = $resolvedUriConstraints->applyTo(new Uri('http://localhost'), false);
                         break;
                     }
                 }
@@ -372,6 +374,6 @@ trait FlowContextTrait
      */
     public function printDebug($string): void
     {
-        echo "\n\033[36m|  " . strtr($string, array("\n" => "\n|  ")) . "\033[0m\n\n";
+        echo "\n\033[36m|  " . strtr($string, ["\n" => "\n|  "]) . "\033[0m\n\n";
     }
 }
