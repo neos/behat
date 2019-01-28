@@ -11,8 +11,6 @@ namespace Neos\Behat\Tests\Behat;
  * source code.
  */
 
-use Behat\Behat\Context\BehatContext;
-use Behat\Behat\Exception\ErrorException;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
@@ -23,7 +21,6 @@ use Neos\Flow\Cli\Response;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Configuration\ConfigurationManager;
-use Neos\Flow\Http\RequestHandler;
 use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Dispatcher;
 use Neos\Flow\Mvc\Routing\Router;
@@ -32,11 +29,9 @@ use Neos\Flow\Persistence\Doctrine\Service;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Security\Policy\PolicyService;
-use Neos\Flow\Security\Policy\RoleRepository;
-use Neos\Utility\ObjectAccess;
 use PHPUnit\Framework\Assert;
 
-class FlowContext extends BehatContext
+trait FlowContextTrait
 {
 
     /**
@@ -65,20 +60,9 @@ class FlowContext extends BehatContext
     protected $lastCommandOutput;
 
     /**
-     * @param array $parameters
-     */
-    public function __construct(array $parameters)
-    {
-        if (self::$bootstrap === NULL) {
-            self::$bootstrap = $this->initializeFlow();
-        }
-        $this->objectManager = self::$bootstrap->getObjectManager();
-    }
-
-    /**
      * Create a flow bootstrap instance
      */
-    protected function initializeFlow()
+    protected function initializeFlow(): Bootstrap
     {
         require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Classes/Core/Bootstrap.php');
         if (!defined('FLOW_PATH_ROOT')) {
@@ -87,14 +71,12 @@ class FlowContext extends BehatContext
         // The new classloader needs warnings converted to exceptions
         if (!defined('BEHAT_ERROR_REPORTING')) {
             define('BEHAT_ERROR_REPORTING', E_ALL);
-            // Load ErrorException class, since it will be used in the Behat error handler
-            class_exists(ErrorException::class);
         }
         $bootstrap = new Bootstrap('Testing/Behat');
         Scripts::initializeClassLoader($bootstrap);
         Scripts::initializeSignalSlot($bootstrap);
         Scripts::initializePackageManagement($bootstrap);
-        // FIXME: We NEED to define a request due to return type declarations, and with hte
+        // FIXME: We NEED to define a request due to return type declarations, and with the
         // current state of the behat test (setup) we cannot use a Http\RequestHandler because
         // some code would then try to access the httpRequest and Response which is not available,
         // so we need to think if we "mock" the whole component chain and a Http\RequestHandler or
@@ -109,7 +91,7 @@ class FlowContext extends BehatContext
     /**
      * @AfterSuite
      */
-    public static function shutdownFlow()
+    public static function shutdownFlow(): void
     {
         if (self::$bootstrap !== null) {
             self::$bootstrap->shutdown('Runtime');
@@ -119,7 +101,7 @@ class FlowContext extends BehatContext
     /**
      * @When /^(?:|I )run the command "([^"]*)"$/
      */
-    public function iRunTheCommand($command)
+    public function iRunTheCommand($command): void
     {
         $captureAspect = $this->objectManager->get(ConsoleLoggingCaptureAspect::class);
         $captureAspect->reset();
@@ -146,7 +128,7 @@ class FlowContext extends BehatContext
     /**
      * @Then /^(?:|I )should see the command output "([^"]*)"$/
      */
-    public function iShouldSeeTheCommandOutput($line)
+    public function iShouldSeeTheCommandOutput($line): void
     {
         Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
     }
@@ -154,7 +136,7 @@ class FlowContext extends BehatContext
     /**
      * @Then /^(P|p)rint last command output$/
      */
-    public function printLastCommandOutput()
+    public function printLastCommandOutput(): void
     {
         $this->printDebug($this->lastCommandOutput);
     }
@@ -162,7 +144,7 @@ class FlowContext extends BehatContext
     /**
      * @Then /^(?:|I )should see "([^"]*)" in the command output$/
      */
-    public function iShouldSeeSomethingInTheCommandOutput($contents)
+    public function iShouldSeeSomethingInTheCommandOutput($contents): void
     {
         Assert::assertContains($contents, $this->lastCommandOutput);
     }
@@ -170,7 +152,7 @@ class FlowContext extends BehatContext
     /**
      * @BeforeScenario @fixtures
      */
-    public function resetTestFixtures($event)
+    public function resetTestFixtures($event): void
     {
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->objectManager->get(EntityManagerInterface::class);
@@ -215,7 +197,7 @@ class FlowContext extends BehatContext
      * @param EntityManagerInterface $entityManager
      * @return void
      */
-    public function truncateTables(EntityManagerInterface $entityManager)
+    public function truncateTables(EntityManagerInterface $entityManager): void
     {
         $connection = $entityManager->getConnection();
 
@@ -248,7 +230,7 @@ class FlowContext extends BehatContext
      *
      * @return void
      */
-    protected function resetFactories()
+    protected function resetFactories(): void
     {
         /** @var $reflectionService ReflectionService */
         $reflectionService = $this->objectManager->get(ReflectionService::class);
@@ -268,16 +250,23 @@ class FlowContext extends BehatContext
      *
      * This is needed to remove cached role entities after resetting the database.
      *
+     * @deprecated
+     */
+    protected function resetRolesAndPolicyService(): void
+    {
+        $this->resetPolicyService();
+    }
+
+    /**
+     * Reset policy service
+     *
+     * This is needed to remove cached role entities after resetting the database.
+     *
      * @return void
      */
-    protected function resetRolesAndPolicyService()
+    protected function resetPolicyService(): void
     {
         $this->objectManager->get(PolicyService::class)->reset();
-
-        if ($this->objectManager->isRegistered(RoleRepository::class)) {
-            $roleRepository = $this->objectManager->get(RoleRepository::class);
-            ObjectAccess::setProperty($roleRepository, 'newRoles', array(), true);
-        }
     }
 
     /**
@@ -296,7 +285,7 @@ class FlowContext extends BehatContext
      */
     protected function getRouter()
     {
-        if ($this->router === NULL) {
+        if ($this->router === null) {
             $this->router = $this->objectManager->get(Router::class);
 
             $configurationManager = $this->objectManager->get(ConfigurationManager::class);
@@ -313,7 +302,7 @@ class FlowContext extends BehatContext
      * @return string
      * @deprecated Use resolvePageUri
      */
-    public function resolvePath($pageName)
+    public function resolvePath($pageName): string
     {
         return $this->resolvePageUri($pageName);
     }
@@ -329,7 +318,7 @@ class FlowContext extends BehatContext
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function resolvePageUri($pageName, array $arguments = null)
+    public function resolvePageUri($pageName, array $arguments = null): string
     {
         $uri = null;
         if (strpos($pageName, '/') === 0) {
@@ -365,7 +354,7 @@ class FlowContext extends BehatContext
     /**
      * @return ObjectManagerInterface
      */
-    public function getObjectManager()
+    public function getObjectManager(): ObjectManagerInterface
     {
         return $this->objectManager;
     }
@@ -373,8 +362,18 @@ class FlowContext extends BehatContext
     /**
      * @return string
      */
-    public function getLastCommandOutput()
+    public function getLastCommandOutput(): string
     {
         return $this->lastCommandOutput;
+    }
+
+    /**
+     * Prints beautified debug string.
+     *
+     * @param string $string debug string
+     */
+    public function printDebug($string): void
+    {
+        echo "\n\033[36m|  " . strtr($string, ["\n" => "\n|  "]) . "\033[0m\n\n";
     }
 }
