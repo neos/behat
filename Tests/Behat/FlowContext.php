@@ -24,6 +24,7 @@ use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Http\RequestHandler;
+use Neos\Flow\Http\Uri;
 use Neos\Flow\Mvc\Dispatcher;
 use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
@@ -345,7 +346,8 @@ class FlowContext extends BehatContext
                         $routeValues = array_merge($routeValues, $arguments);
                     }
                     if ($route->resolves($routeValues)) {
-                        $uri = $route->getResolvedUriPath();
+                        $resolvedUriConstraints = $route->getResolvedUriConstraints();
+                        $uri = $resolvedUriConstraints->applyTo(new Uri('http://localhost'), false);
                         break;
                     }
                 }
