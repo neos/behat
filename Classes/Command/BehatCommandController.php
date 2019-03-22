@@ -54,13 +54,10 @@ class BehatCommandController extends CommandController
         if (!is_file($seleniumBinaryPath)) {
             $seleniumVersion = 'selenium-server-standalone-2.53.1.jar';
             $seleniumUrl = 'http://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
-            $returnValue = 0;
-            exec('wget --quiet ' . $seleniumUrl, $output, $returnValue);
             $this->outputLine('Downloading Selenium ' . $seleniumVersion . ' to bin/selenium-server.jar...');
-            if ($returnValue > 0) {
-                throw new \RuntimeException('Could not download selenium from ' . $seleniumUrl . '. wget errno: ' . $returnValue);
+            if (copy($seleniumUrl, FLOW_PATH_ROOT . 'bin/selenium-server.jar') !== true) {
+                throw new \RuntimeException('Could not download selenium from ' . $seleniumUrl . '.');
             }
-            rename(FLOW_PATH_ROOT . $seleniumVersion, FLOW_PATH_ROOT . 'bin/selenium-server.jar');
             $this->outputLine('Downloaded Selenium to bin/selenium-server.jar');
             $this->outputLine('You can execute it through: "java -jar selenium-server.jar"');
         }
