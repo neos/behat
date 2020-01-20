@@ -213,6 +213,14 @@ trait FlowContextTrait
                 $sql .= 'SET FOREIGN_KEY_CHECKS=1;';
                 $connection->executeQuery($sql);
                 break;
+            case 'sqlite':
+                $sql = 'PRAGMA foreign_keys = OFF;';
+                foreach ($tables as $table) {
+                    $sql .= 'DELETE FROM `' . $table->getName() . '`;';
+                }
+                $sql .= 'PRAGMA foreign_keys = ON;';
+                $connection->executeQuery($sql);
+                break;
             case 'postgresql':
             default:
                 foreach ($tables as $table) {
