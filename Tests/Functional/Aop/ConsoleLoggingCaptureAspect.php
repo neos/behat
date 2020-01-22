@@ -66,7 +66,7 @@ class ConsoleLoggingCaptureAspect
      */
     public function disableOutput()
     {
-        $this->sendConsoleOutput = true;
+        $this->sendConsoleOutput = false;
     }
 
     /**
