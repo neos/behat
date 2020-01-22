@@ -54,6 +54,19 @@ class ConsoleLoggingCaptureAspect
     }
 
     /**
+     * @Flow\Around("method(Neos\Flow\Cli\ConsoleOutput->outputTable())")
+     * @param JoinPointInterface $joinPoint
+     * @return mixed
+     */
+    public function captureTable(JoinPointInterface $joinPoint)
+    {
+        // ToDo: If testing with tables is needed, store the table here.
+        if ($this->sendConsoleOutput === true) {
+            return $joinPoint->getAdviceChain()->proceed($joinPoint);
+        }
+    }
+
+    /**
      * Enable console output
      */
     public function enableOutput()
