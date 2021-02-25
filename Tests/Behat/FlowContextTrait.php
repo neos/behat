@@ -174,6 +174,11 @@ trait FlowContextTrait
                 $doctrineService = $this->objectManager->get(Service::class);
                 $doctrineService->executeMigrations();
                 $needsTruncate = false;
+            } catch (\PDOException $exception) {
+                if ($exception->getMessage() !== 'There is no active transaction') {
+                    throw $exception;
+                }
+                $needsTruncate = true;
             }
 
             $schema = $entityManager->getConnection()->getSchemaManager()->createSchema();
