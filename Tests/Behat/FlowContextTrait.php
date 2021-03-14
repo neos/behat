@@ -118,9 +118,7 @@ trait FlowContextTrait
             $this->lastCommandOutput = $captureAspect->getCapturedOutput();
 
             $this->persistAll();
-
-            $captureAspect->enableOutput();
-        } catch (\Exception $e) {
+        } finally {
             $captureAspect->enableOutput();
         }
     }
