@@ -4,7 +4,7 @@
     "description": "Behat support package for Neos Flow",
     "license": ["LGPL-3.0-or-later"],
     "require": {
-        "neos/flow": "*"
+        "neos/flow": "~7.1.0"
     },
     "autoload": {
         "psr-4": {
