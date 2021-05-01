@@ -5,7 +5,7 @@
     "license": ["LGPL-3.0-or-later"],
     "require": {
         "php": "^7.2 || ^8.0",
-        "neos/flow": "~7.1.0"
+        "neos/flow": "~7.0 || dev-master"
     },
     "autoload": {
         "psr-4": {
