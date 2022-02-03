@@ -12,18 +12,20 @@ namespace Neos\Behat\Command;
  */
 
 use Neos\Flow\Annotations as Flow;
-use Neos\Utility\Files;
 use Neos\Flow\Cli\CommandController;
+use Neos\Flow\Package\Exception\UnknownPackageException;
+use Neos\Flow\Package\PackageManager;
+use Neos\Utility\Exception\FilesException;
+use Neos\Utility\Files;
 
 /**
  * @Flow\Scope("singleton")
  */
 class BehatCommandController extends CommandController
 {
-
     /**
-     * @var \Neos\Flow\Package\PackageManager
      * @Flow\Inject
+     * @var PackageManager
      */
     protected $packageManager;
 
@@ -31,35 +33,41 @@ class BehatCommandController extends CommandController
      * This command will help you to install Behat
      *
      * It will check for all necessary things to run Behat tests.
-     * If you specify a Package name it will create the basis for your new
-     * test.
      *
      * @return void
+     * @throws FilesException
      */
-    public function setupCommand()
+    public function setupCommand(): void
     {
         $behatBuildPath = FLOW_PATH_ROOT . 'Build/Behat/';
-        if (!is_dir($behatBuildPath)) {
-            Files::copyDirectoryRecursively('resource://Neos.Behat/Private/Build/Behat', $behatBuildPath);
+        if (is_dir($behatBuildPath)) {
+            Files::emptyDirectoryRecursively($behatBuildPath);
         }
+        $this->outputLine('Copying Behat setup to %s', [$behatBuildPath]);
+        Files::copyDirectoryRecursively('resource://Neos.Behat/Private/Build/Behat', $behatBuildPath);
 
         $behatBinaryPath = FLOW_PATH_ROOT . 'bin/behat';
-        if (!is_file($behatBinaryPath)) {
-            exec('cd "' . $behatBuildPath . '" && composer install');
-            $this->outputLine();
-            $this->outputLine('Installed Behat to bin/behat');
+        if (is_file($behatBinaryPath)) {
+            $this->outputLine('Removing existing Behat binary %s', [$behatBinaryPath]);
+            unlink($behatBinaryPath);
         }
+        $this->outputLine('Installing Behat in %s', [$behatBuildPath]);
+        exec('cd "' . $behatBuildPath . '" && composer install');
+        $this->outputLine();
+        $this->outputLine('Installed Behat to %s, binary to %s', [$behatBuildPath, $behatBinaryPath]);
 
         $seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
         if (!is_file($seleniumBinaryPath)) {
             $seleniumVersion = 'selenium-server-standalone-2.53.1.jar';
-            $seleniumUrl = 'http://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
-            $this->outputLine('Downloading Selenium ' . $seleniumVersion . ' to bin/selenium-server.jar...');
+            $seleniumUrl = 'https://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
+            $this->outputLine('Downloading Selenium %s to bin/selenium-server.jar...', [$seleniumVersion]);
             if (copy($seleniumUrl, FLOW_PATH_ROOT . 'bin/selenium-server.jar') !== true) {
                 throw new \RuntimeException('Could not download selenium from ' . $seleniumUrl . '.');
             }
             $this->outputLine('Downloaded Selenium to bin/selenium-server.jar');
             $this->outputLine('You can execute it through: "java -jar selenium-server.jar"');
+        } else {
+            $this->outputLine('Skipped downloaded of Selenium, to update or reinstall delete bin/selenium-server.jar and run setup again');
         }
     }
 
@@ -71,8 +79,10 @@ class BehatCommandController extends CommandController
      * @param string $packageName The package key
      * @param string $host The base URL for the Flow application (e.g. http://example.local/)
      * @return void
+     * @throws FilesException
+     * @throws UnknownPackageException
      */
-    public function kickstartCommand($packageName, $host)
+    public function kickstartCommand(string $packageName, string $host): void
     {
         $this->setupCommand();
 
@@ -90,5 +100,4 @@ class BehatCommandController extends CommandController
         }
         $this->outputLine('Behat is installed and can be used by running: "bin/behat -c Packages/Application/%s/Tests/Behavior/behat.yml"', [$packageName]);
     }
-
 }
