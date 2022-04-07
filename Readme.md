@@ -14,32 +14,35 @@ since all the data will be removed after each scenario.
 
 `FLOW_ROOT/Configuration/Development/Behat/Settings.yaml`::
 
-	Neos:
-	  Flow:
-	    persistence:
-	      backendOptions:
-	        dbname: 'neos_testing_behat'
-
+```yaml
+Neos:
+ Flow:
+  persistence:
+   backendOptions:
+    dbname: 'neos_testing_behat'
+```
 `FLOW_ROOT/Configuration/Testing/Behat/Settings.yaml`::
 
-	Neos:
-	  Flow:
-	    persistence:
-	      backendOptions:
-	        dbname: 'neos_testing_behat'
-	        driver: pdo_mysql
-	        user: ''
-	        password: ''
+```yaml
+Neos:
+ Flow:
+  persistence:
+   backendOptions:
+    dbname: 'neos_testing_behat'
+    driver: pdo_mysql
+    user: ''
+    password: ''
+```
 
 Example virtual host configuration for Apache::
 
-	<VirtualHost *:80>
-		DocumentRoot "FLOW_ROOT/Web"
-		ServerName neos.behat.test
-		SetEnv FLOW_CONTEXT Development/Behat
-	</VirtualHost>
-	
-
+```apache
+<VirtualHost *:80>
+   DocumentRoot "FLOW_ROOT/Web"
+   ServerName neos.behat.test
+   SetEnv FLOW_CONTEXT Development/Behat
+</VirtualHost>
+```
 # Installation
 
 This package provides 2 commands to ease the setup of Behat in your Flow project:
