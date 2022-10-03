@@ -34,10 +34,11 @@ class BehatCommandController extends CommandController
      *
      * It will check for all necessary things to run Behat tests.
      *
+     * @param bool $skipSeleniumDownload if true, the selenium binary download is skipped
      * @return void
      * @throws FilesException
      */
-    public function setupCommand(): void
+    public function setupCommand(bool $skipSeleniumDownload = false): void
     {
         $behatBuildPath = FLOW_PATH_ROOT . 'Build/Behat/';
         if (is_dir($behatBuildPath)) {
@@ -56,18 +57,22 @@ class BehatCommandController extends CommandController
         $this->outputLine();
         $this->outputLine('Installed Behat to %s, binary to %s', [$behatBuildPath, $behatBinaryPath]);
 
-        $seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
-        if (!is_file($seleniumBinaryPath)) {
-            $seleniumVersion = 'selenium-server-standalone-2.53.1.jar';
-            $seleniumUrl = 'https://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
-            $this->outputLine('Downloading Selenium %s to bin/selenium-server.jar...', [$seleniumVersion]);
-            if (copy($seleniumUrl, FLOW_PATH_ROOT . 'bin/selenium-server.jar') !== true) {
-                throw new \RuntimeException('Could not download selenium from ' . $seleniumUrl . '.');
-            }
-            $this->outputLine('Downloaded Selenium to bin/selenium-server.jar');
-            $this->outputLine('You can execute it through: "java -jar selenium-server.jar"');
+        if ($skipSeleniumDownload) {
+            $this->outputLine('Skipped download of Selenium via argument --skip-selenium-download=true');
         } else {
-            $this->outputLine('Skipped downloaded of Selenium, to update or reinstall delete bin/selenium-server.jar and run setup again');
+            $seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
+            if (!is_file($seleniumBinaryPath)) {
+                $seleniumVersion = 'selenium-server-standalone-2.53.1.jar';
+                $seleniumUrl = 'https://selenium-release.storage.googleapis.com/2.53/' . $seleniumVersion;
+                $this->outputLine('Downloading Selenium %s to bin/selenium-server.jar...', [$seleniumVersion]);
+                if (copy($seleniumUrl, FLOW_PATH_ROOT . 'bin/selenium-server.jar') !== true) {
+                    throw new \RuntimeException('Could not download selenium from ' . $seleniumUrl . '.');
+                }
+                $this->outputLine('Downloaded Selenium to bin/selenium-server.jar');
+                $this->outputLine('You can execute it through: "java -jar selenium-server.jar"');
+            } else {
+                $this->outputLine('Skipped downloaded of Selenium, to update or reinstall delete bin/selenium-server.jar and run setup again');
+            }
         }
     }
 
