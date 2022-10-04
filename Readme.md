@@ -55,6 +55,13 @@ If you don't meet that requirement you should manually run a "composer install" 
 ./flow behat:setup
 ```
 
+You might use other end-to-end test tools than selenium, or you don't need a browser at all.
+Skip the selenium download via command argument `--skip-selenium-download`
+```
+# setup without selenium
+./flow behat:setup --skip-selenium-download=true
+```
+
 **behat:kickstart**
 
 This command will add a Tests/Behavior folder with basic Behat tests to the specified package
