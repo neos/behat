@@ -52,5 +52,10 @@
             "TYPO3.Neos-20150303231600",
             "TYPO3.TYPO3CR-20150510103823"
         ]
+    },
+    "config": {
+        "allow-plugins": {
+            "neos/composer-plugin": true
+        }
     }
 }
