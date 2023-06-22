@@ -1,0 +1,6 @@
+/Packages
+/vendor
+/Resources/Private/bin
+/Resources/Private/Build/Behat/vendor
+/composer.lock
+
