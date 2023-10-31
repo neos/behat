@@ -71,6 +71,8 @@ trait FlowBootstrapTrait
     }
 
     /**
+     * When needing dependencies, your trait should use this method (and declare it as abstract)
+     *
      * @template T of object
      * @param class-string<T> $className
      *
