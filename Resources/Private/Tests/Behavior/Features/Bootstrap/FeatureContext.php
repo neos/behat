@@ -1,37 +1,24 @@
 <?php
 
 use Behat\Behat\Context\Context;
-use Neos\Behat\Tests\Behat\FlowContextTrait;
+use Neos\Behat\FlowBootstrapTrait;
+use Neos\Flow\Configuration\ConfigurationManager;
 
-require_once(__DIR__ . '/../../../../../../Application/Neos.Behat/Tests/Behat/FlowContextTrait.php');
-
-/**
- * Features context
- */
 class FeatureContext implements Context
 {
-    use FlowContextTrait;
-
-    /**
-     * @var \Neos\Flow\ObjectManagement\ObjectManagerInterface
-     */
-    protected $objectManager;
+    use FlowBootstrapTrait;
 
     public function __construct()
     {
-        if (self::$bootstrap === null) {
-            self::$bootstrap = $this->initializeFlow();
-        }
-        $this->objectManager = self::$bootstrap->getObjectManager();
+        self::bootstrapFlow();
     }
 
     /**
-     * @Then /^I should see some output from behat$/
-     * @return bool
+     * @Then I should see some output from behat
      */
-    public function iShouldSeeSomeOutputFromBehat(): bool
+    public function iShouldSeeSomeOutputFromBehat(): void
     {
-        $this->printDebug('Can you see me?');
-        return true;
+        $configurationManager = $this->getObject(ConfigurationManager::class);
+        echo json_encode($configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Neos.Flow.core'));
     }
 }
