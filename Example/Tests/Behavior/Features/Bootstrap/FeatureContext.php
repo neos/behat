@@ -20,5 +20,6 @@ class FeatureContext implements Context
     {
         $configurationManager = $this->getObject(ConfigurationManager::class);
         echo json_encode($configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Neos.Flow.core'));
+        die();
     }
 }

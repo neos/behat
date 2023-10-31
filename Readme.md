@@ -31,3 +31,6 @@ Neos:
 Previously when including the `FlowContextTrait`, and tagging the feature with `@fixture`, it would clear the doctrine tables after each tests.
 
 The new `FlowBootstrapTrait` doesn't handle this anymore, but one needs to use the `FlowEntitiesTrait` and tag the feature with `@flowEntities`
+
+Previously we advised to install behat into a separate folder via `behat:setup`, but there is currently no need for this complexity.
+Now we advise to simply install behat inside the same composer distribution.

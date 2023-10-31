@@ -87,19 +87,6 @@ trait FlowBootstrapTrait
     }
 
     /**
-     * If you only want to get an object instance you can use getObject() instead
-     *
-     * @deprecated please use {@see self::getObject()} instead
-     */
-    final protected function getObjectManager(): ObjectManagerInterface
-    {
-        if (self::$bootstrap === null) {
-            throw new \RuntimeException('Could not get Flow Object Manager, because flow is not initialized.', 1698765932);
-        }
-        return self::$bootstrap->getObjectManager();
-    }
-
-    /**
      * Executes the specified $command in the context of the application to test
      * @api
      */
