@@ -11,29 +11,25 @@ namespace Neos\Behat\Tests\Behat;
  * source code.
  */
 
+use Behat\Hook\BeforeScenario;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManagerInterface;
-use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
-use Neos\Behat\Tests\Functional\Fixture\FixtureFactory;
+use Neos\Behat\FlowBootstrapTrait;
+use Neos\Behat\FlowEntitiesTrait;
 use Neos\Flow\Cli\CommandRequestHandler;
-use Neos\Flow\Cli\RequestBuilder;
-use Neos\Flow\Cli\Response;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
-use Neos\Flow\Configuration\ConfigurationManager;
-use Neos\Flow\Http\Uri;
-use Neos\Flow\Mvc\Dispatcher;
 use Neos\Flow\Mvc\Routing\Router;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
 use Neos\Flow\Persistence\Doctrine\Service;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
-use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Security\Policy\PolicyService;
-use PHPUnit\Framework\Assert;
 
+/**
+ * @deprecated will be removed in favour of {@see FlowBootstrapTrait} and the {@see FlowEntitiesTrait}
+ */
 trait FlowContextTrait
 {
-
     /**
      * @var Bootstrap
      */
@@ -53,11 +49,6 @@ trait FlowContextTrait
      * @var \Doctrine\DBAL\Schema\Schema
      */
     protected static $databaseSchema;
-
-    /**
-     * @var string
-     */
-    protected $lastCommandOutput;
 
     /**
      * Create a flow bootstrap instance
@@ -98,58 +89,7 @@ trait FlowContextTrait
         }
     }
 
-    /**
-     * @When /^(?:|I )run the command "([^"]*)"$/
-     */
-    public function iRunTheCommand($command): void
-    {
-        $captureAspect = $this->objectManager->get(ConsoleLoggingCaptureAspect::class);
-        $captureAspect->reset();
-
-        $captureAspect->disableOutput();
-
-        try {
-            $request = $this->objectManager->get(RequestBuilder::class)->build($command);
-            $response = new Response();
-
-            $dispatcher = $this->objectManager->get(Dispatcher::class);
-            $dispatcher->dispatch($request, $response);
-
-            $this->lastCommandOutput = $captureAspect->getCapturedOutput();
-
-            $this->persistAll();
-        } finally {
-            $captureAspect->enableOutput();
-        }
-    }
-
-    /**
-     * @Then /^(?:|I )should see the command output "([^"]*)"$/
-     */
-    public function iShouldSeeTheCommandOutput($line): void
-    {
-        Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
-    }
-
-    /**
-     * @Then /^(P|p)rint last command output$/
-     */
-    public function printLastCommandOutput(): void
-    {
-        $this->printDebug($this->lastCommandOutput);
-    }
-
-    /**
-     * @Then /^(?:|I )should see "([^"]*)" in the command output$/
-     */
-    public function iShouldSeeSomethingInTheCommandOutput($contents): void
-    {
-        Assert::assertContains($contents, $this->lastCommandOutput);
-    }
-
-    /**
-     * @BeforeScenario @fixtures
-     */
+    #[BeforeScenario('@fixtures')]
     public function resetTestFixtures($event): void
     {
         /** @var EntityManagerInterface $entityManager */
@@ -191,7 +131,7 @@ trait FlowContextTrait
             $proxyFactory->generateProxyClasses($entityManager->getMetadataFactory()->getAllMetadata());
         }
 
-        $this->resetFactories();
+        $this->resetPolicyService();
     }
 
     /**
@@ -235,40 +175,6 @@ trait FlowContextTrait
     }
 
     /**
-     * Reset factory instances
-     *
-     * Must be called after all persistAll calls and before scenarios to have a clean state.
-     *
-     * @return void
-     */
-    protected function resetFactories(): void
-    {
-        /** @var $reflectionService ReflectionService */
-        $reflectionService = $this->objectManager->get(ReflectionService::class);
-        $fixtureFactoryClassNames = $reflectionService->getAllSubClassNamesForClass(FixtureFactory::class);
-        foreach ($fixtureFactoryClassNames as $fixtureFactoryClassName) {
-            if (!$reflectionService->isClassAbstract($fixtureFactoryClassName)) {
-                $factory = $this->objectManager->get($fixtureFactoryClassName);
-                $factory->reset();
-            }
-        }
-
-        $this->resetRolesAndPolicyService();
-    }
-
-    /**
-     * Reset policy service and role repository
-     *
-     * This is needed to remove cached role entities after resetting the database.
-     *
-     * @deprecated
-     */
-    protected function resetRolesAndPolicyService(): void
-    {
-        $this->resetPolicyService();
-    }
-
-    /**
      * Reset policy service
      *
      * This is needed to remove cached role entities after resetting the database.
@@ -288,78 +194,7 @@ trait FlowContextTrait
         $this->objectManager->get(PersistenceManagerInterface::class)->persistAll();
         $this->objectManager->get(PersistenceManagerInterface::class)->clearState();
 
-        $this->resetFactories();
-    }
-
-    /**
-     * @return Router
-     */
-    protected function getRouter()
-    {
-        if ($this->router === null) {
-            $this->router = $this->objectManager->get(Router::class);
-
-            $configurationManager = $this->objectManager->get(ConfigurationManager::class);
-            $routesConfiguration = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_ROUTES);
-            $this->router->setRoutesConfiguration($routesConfiguration);
-        }
-        return $this->router;
-    }
-
-    /**
-     * Resolve a path by route name or a relative path (as a fallback)
-     *
-     * @param string $pageName
-     * @return string
-     * @deprecated Use resolvePageUri
-     */
-    public function resolvePath($pageName): string
-    {
-        return $this->resolvePageUri($pageName);
-    }
-
-    /**
-     * Resolves a URI for the given page name
-     *
-     * If a Flow route with a name equal to $pageName exists it will be resolved.
-     * An absolute path will be used as is for compatibility with the default MinkContext.
-     *
-     * @param string $pageName
-     * @param array $arguments
-     * @return string
-     * @throws \InvalidArgumentException
-     */
-    public function resolvePageUri($pageName, array $arguments = null): string
-    {
-        $uri = null;
-        if (strpos($pageName, '/') === 0) {
-            $uri = $pageName;
-            return $uri;
-        } else {
-            $router = $this->getRouter();
-
-            /** @var \Neos\Flow\Mvc\Routing\Route $route */
-            foreach ($router->getRoutes() as $route) {
-                if (preg_match('/::\s*' . preg_quote($pageName, '/') . '$/', $route->getName())) {
-                    $routeValues = $route->getDefaults();
-                    if (is_array($arguments)) {
-                        $routeValues = array_merge($routeValues, $arguments);
-                    }
-                    if ($route->resolves($routeValues)) {
-                        $resolvedUriConstraints = $route->getResolvedUriConstraints();
-                        $uri = $resolvedUriConstraints->applyTo(new Uri('http://localhost'), false);
-                        break;
-                    }
-                }
-            }
-            if ($uri === null) {
-                throw new \InvalidArgumentException('Could not resolve a route for name "' . $pageName . '"');
-            }
-            if (strpos($uri, 'http') !== 0 && strpos($uri, '/') !== 0) {
-                $uri = '/' . $uri;
-            }
-            return $uri;
-        }
+        $this->resetPolicyService();
     }
 
     /**
@@ -368,14 +203,6 @@ trait FlowContextTrait
     public function getObjectManager(): ObjectManagerInterface
     {
         return $this->objectManager;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLastCommandOutput(): string
-    {
-        return $this->lastCommandOutput;
     }
 
     /**
