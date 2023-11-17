@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Neos\Behat;
 
 use Behat\Hook\BeforeScenario;
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DoctrineException;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
-use Neos\Flow\Persistence\Doctrine\Service;
+use Neos\Flow\Configuration\ConfigurationManager;
+use Neos\Flow\Persistence\Doctrine\Service as FlowDoctrineService;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
 
 /**
- * Tag your test with @ flowEntities to enable support for flow entities
+ * Tag your test with [at]flowEntities to enable support for flow entities
  *
  * @api
  */
@@ -40,14 +41,15 @@ trait FlowEntitiesTrait
             $this->truncateTables($entityManager);
         } else {
             try {
-                $doctrineService = $this->getObject(Service::class);
+                $doctrineService = $this->getObject(FlowDoctrineService::class);
+
                 $doctrineService->executeMigrations();
                 $needsTruncate = true;
-            } catch (DBALException $exception) {
+            } catch (DoctrineException $exception) {
                 // Do an initial teardown to drop the schema cleanly
                 $this->getObject(PersistenceManagerInterface::class)->tearDown();
 
-                $doctrineService = $this->getObject(Service::class);
+                $doctrineService = $this->getObject(FlowDoctrineService::class);
                 $doctrineService->executeMigrations();
                 $needsTruncate = false;
             } catch (\PDOException $exception) {
@@ -82,9 +84,34 @@ trait FlowEntitiesTrait
     {
         $connection = $entityManager->getConnection();
 
-        $tables = array_filter(self::$databaseSchema->getTables(), function ($table) {
-            return $table->getName() !== 'flow_doctrine_migrationstatus';
+        /**
+         * We respect flows option "ignoredTables" to preserve certain tables while resetting the database.
+         * In our case we interpret everything in "ignoredTables" as not managed by doctrine.
+         * And this trait should only clear tables for @flowEntities.
+         * An important use case is keeping the Neos ESCR tables `cr_*.` alive for speeding up tests.
+         *
+         * Docs for original idea of "ignoredTables": {@link https://flowframework.readthedocs.io/en/9.0/TheDefinitiveGuide/PartIII/Persistence.html#ignoring-tables}
+         *
+         * Implementation copied from {@link https://github.com/neos/flow-development-collection/blob/ed6a26603f682966816c71840524c7da6ed919a5/Neos.Flow/Classes/Command/DoctrineCommandController.php#L468-L474}
+         */
+        $ignoredTables = $this->getObject(ConfigurationManager::class)
+            ->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_SETTINGS, 'Neos.Flow.persistence.doctrine.migrations.ignoredTables') ?? [];
+        $filterExpression = null;
+        $ignoredTables = array_keys(array_filter($ignoredTables));
+        if ($ignoredTables !== []) {
+            $filterExpression = sprintf('/^(?!%s$).*$/xs', implode('$|', $ignoredTables));
+        }
+
+        $tables = array_filter(self::$databaseSchema->getTables(), function ($table) use ($filterExpression) {
+            if ($table->getName() === FlowDoctrineService::DOCTRINE_MIGRATIONSTABLENAME) {
+                return false;
+            }
+            if ($filterExpression === null) {
+                return true;
+            }
+            return preg_match($filterExpression, $table->getName()) === 1;
         });
+
         switch ($connection->getDatabasePlatform()->getName()) {
             case 'mysql':
                 $sql = 'SET FOREIGN_KEY_CHECKS=0;';
