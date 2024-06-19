@@ -9,8 +9,7 @@ use Neos\Flow\Core\Booting\Exception\SubProcessException;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Testing\RequestHandler\RuntimeSequenceHttpRequestHandler;
-use Neos\Http\Factories\ServerRequestFactory;
-use Neos\Http\Factories\UriFactory;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 
 /**
  * Boot flow in a behat feature context
@@ -62,12 +61,13 @@ trait FlowBootstrapTrait
         $flowBootstrap->registerRequestHandler($requestHandler);
         $flowBootstrap->setPreselectedRequestHandlerClassName($requestHandler::class);
 
-        $serverRequestFactory = new ServerRequestFactory(new UriFactory());
+        $flowBootstrap->run();
+
+        $serverRequestFactory = $flowBootstrap->getObjectManager()->get(ServerRequestFactoryInterface::class);
+
         $request = $serverRequestFactory->createServerRequest('GET', 'http://localhost');
 
         $requestHandler->setHttpRequest($request);
-
-        $flowBootstrap->run();
 
         return self::$bootstrap = $flowBootstrap;
     }
