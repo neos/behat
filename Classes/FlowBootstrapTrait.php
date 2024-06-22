@@ -8,8 +8,8 @@ use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Core\Booting\Exception\SubProcessException;
 use Neos\Flow\Core\Booting\Scripts;
 use Neos\Flow\Core\Bootstrap;
-use Neos\Flow\ObjectManagement\ObjectManagerInterface;
-use Neos\Flow\Tests\FunctionalTestRequestHandler;
+use Neos\Flow\Testing\RequestHandler\RuntimeSequenceHttpRequestHandler;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 
 /**
  * Boot flow in a behat feature context
@@ -30,6 +30,9 @@ use Neos\Flow\Tests\FunctionalTestRequestHandler;
  */
 trait FlowBootstrapTrait
 {
+    /**
+     * @internal please use {@see self::getObject()} to get objects
+     */
     private static ?Bootstrap $bootstrap = null;
 
     /**
@@ -50,13 +53,23 @@ trait FlowBootstrapTrait
         if (!defined('BEHAT_ERROR_REPORTING')) {
             define('BEHAT_ERROR_REPORTING', E_ALL);
         }
-        self::$bootstrap = new Bootstrap('Testing/Behat');
-        Scripts::initializeClassLoader(self::$bootstrap);
-        Scripts::initializeSignalSlot(self::$bootstrap);
-        Scripts::initializePackageManagement(self::$bootstrap);
-        self::$bootstrap->setActiveRequestHandler(new FunctionalTestRequestHandler(self::$bootstrap));
-        self::$bootstrap->buildRuntimeSequence()->invoke(self::$bootstrap);
-        return self::$bootstrap;
+
+        // Boot flow with an active request handler
+        $flowBootstrap = new Bootstrap('Testing/Behat');
+        $requestHandler = new RuntimeSequenceHttpRequestHandler($flowBootstrap);
+
+        $flowBootstrap->registerRequestHandler($requestHandler);
+        $flowBootstrap->setPreselectedRequestHandlerClassName($requestHandler::class);
+
+        $flowBootstrap->run();
+
+        $serverRequestFactory = $flowBootstrap->getObjectManager()->get(ServerRequestFactoryInterface::class);
+
+        $request = $serverRequestFactory->createServerRequest('GET', 'http://localhost');
+
+        $requestHandler->setHttpRequest($request);
+
+        return self::$bootstrap = $flowBootstrap;
     }
 
     /**

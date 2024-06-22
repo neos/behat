@@ -65,17 +65,6 @@ trait FlowEntitiesTrait
             if ($needsTruncate) {
                 $this->truncateTables($entityManager);
             }
-
-            // TODO Remove this and fix flow
-            // After debugging this a bit with christian, we came further but found not the real source why this doesnt work in testing.
-            // We correctly boot flow and also the buildRuntimeSequence triggers the compileDoctrineProxies
-            // But it seems that the `Flow_Reflection_RuntimeClassSchemata` cache seems to be empty in testing context and we expect it to be filled in `FlowAnnotationDriver.php:118`
-            // This might be because flow is mainly programmed for Production and Development, and in testing skips the cache fillup:
-            // https://github.com/neos/flow-development-collection/blob/53c82370d554b27fac61ba96ec5c3b6015546c1f/Neos.Flow/Classes/Reflection/ReflectionService.php#L1844
-            // But removing this line alone does not fix the issue alone
-            // p.s. dont blame me
-            $proxyFactory = $entityManager->getProxyFactory();
-            $proxyFactory->generateProxyClasses($entityManager->getMetadataFactory()->getAllMetadata());
         }
     }
 
