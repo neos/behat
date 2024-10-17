@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Neos\Behat;
 
 use Behat\Hook\BeforeScenario;
-use Doctrine\DBAL\Exception as DoctrineException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Flow\Configuration\ConfigurationManager;
@@ -45,7 +45,7 @@ trait FlowEntitiesTrait
 
                 $doctrineService->executeMigrations();
                 $needsTruncate = true;
-            } catch (DoctrineException $exception) {
+            } catch (DBALException $exception) {
                 // Do an initial teardown to drop the schema cleanly
                 $this->getObject(PersistenceManagerInterface::class)->tearDown();
 
