@@ -47,6 +47,8 @@ trait FlowEntitiesTrait
                 $doctrineService = $this->getObject(FlowDoctrineService::class);
 
                 $doctrineService->executeMigrations();
+                // Hotfix reconnecting resets the currently active transactions
+                $connection->close();
                 $needsTruncate = true;
             } catch (DBALException $exception) {
                 // Do an initial teardown to drop the schema cleanly
@@ -54,6 +56,8 @@ trait FlowEntitiesTrait
 
                 $doctrineService = $this->getObject(FlowDoctrineService::class);
                 $doctrineService->executeMigrations();
+                // Hotfix reconnecting resets the currently active transactions
+                $connection->close();
                 $needsTruncate = false;
             } catch (\PDOException $exception) {
                 if ($exception->getMessage() !== 'There is no active transaction') {
@@ -69,6 +73,14 @@ trait FlowEntitiesTrait
                 $this->truncateTables($connection);
             }
         }
+
+       // \var_dump([
+       //     'getTransactionNestingLevel' => $connection->getTransactionNestingLevel(),
+       //     'isRollbackOnly' => $connection->isTransactionActive() ? $connection->isRollbackOnly() : null,
+       //     'isTransactionActive' => $connection->isTransactionActive(),
+       // ]);
+       // die();
+
     }
 
     /** @internal */
