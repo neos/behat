@@ -12,7 +12,7 @@ namespace Neos\Behat\Tests\Behat;
  */
 
 use Behat\Hook\BeforeScenario;
-use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Behat\FlowBootstrapTrait;
 use Neos\Behat\FlowEntitiesTrait;

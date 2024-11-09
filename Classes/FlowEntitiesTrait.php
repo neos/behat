@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Neos\Behat;
 
 use Behat\Hook\BeforeScenario;
-use Doctrine\DBAL\Exception as DoctrineException;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\ORM\EntityManagerInterface;
 use Neos\Flow\Configuration\ConfigurationManager;
@@ -36,21 +37,27 @@ trait FlowEntitiesTrait
     {
         $entityManager = $this->getObject(EntityManagerInterface::class);
         $entityManager->clear();
+        // the same connection as the singleton: $this->getObject(Connection::class);
+        $connection = $entityManager->getConnection();
 
         if (self::$databaseSchema !== null) {
-            $this->truncateTables($entityManager);
+            $this->truncateTables($connection);
         } else {
             try {
                 $doctrineService = $this->getObject(FlowDoctrineService::class);
 
                 $doctrineService->executeMigrations();
+                // Hotfix reconnecting resets the currently active transactions
+                $connection->close();
                 $needsTruncate = true;
-            } catch (DoctrineException $exception) {
+            } catch (DBALException $exception) {
                 // Do an initial teardown to drop the schema cleanly
                 $this->getObject(PersistenceManagerInterface::class)->tearDown();
 
                 $doctrineService = $this->getObject(FlowDoctrineService::class);
                 $doctrineService->executeMigrations();
+                // Hotfix reconnecting resets the currently active transactions
+                $connection->close();
                 $needsTruncate = false;
             } catch (\PDOException $exception) {
                 if ($exception->getMessage() !== 'There is no active transaction') {
@@ -59,20 +66,26 @@ trait FlowEntitiesTrait
                 $needsTruncate = true;
             }
 
-            $schema = $entityManager->getConnection()->getSchemaManager()->createSchema();
+            $schema = $connection->getSchemaManager()->createSchema();
             self::$databaseSchema = $schema;
 
             if ($needsTruncate) {
-                $this->truncateTables($entityManager);
+                $this->truncateTables($connection);
             }
         }
+
+       // \var_dump([
+       //     'getTransactionNestingLevel' => $connection->getTransactionNestingLevel(),
+       //     'isRollbackOnly' => $connection->isTransactionActive() ? $connection->isRollbackOnly() : null,
+       //     'isTransactionActive' => $connection->isTransactionActive(),
+       // ]);
+       // die();
+
     }
 
     /** @internal */
-    private function truncateTables(EntityManagerInterface $entityManager): void
+    private function truncateTables(Connection $connection): void
     {
-        $connection = $entityManager->getConnection();
-
         /**
          * We respect flows option "ignoredTables" to preserve certain tables while resetting the database.
          * In our case we interpret everything in "ignoredTables" as not managed by doctrine.
