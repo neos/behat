@@ -55,7 +55,11 @@ trait FlowBootstrapTrait
         }
 
         // Boot flow with an active request handler
-        $flowBootstrap = new Bootstrap('Testing/Behat');
+        $context = Bootstrap::getEnvironmentConfigurationSetting('FLOW_CONTEXT') ?: 'Testing/Behat';
+        if (!($context === 'Testing/Behat' || str_starts_with($context, 'Testing/Behat/'))) {
+            throw new \RuntimeException(sprintf('Invalid behat context %s. Expected to start with Testing/Behat', $context), 1776430103);
+        }
+        $flowBootstrap = new Bootstrap($context);
         $requestHandler = new RuntimeSequenceHttpRequestHandler($flowBootstrap);
 
         $flowBootstrap->registerRequestHandler($requestHandler);
